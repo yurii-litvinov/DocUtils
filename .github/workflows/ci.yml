@@ -1,0 +1,15 @@
+jobs:
+  build:
+    runs-on: windows-latest
+  steps:
+  - uses: actions/checkout@v2
+  - uses: actions/setup-dotnet@v1
+    with:
+      dotnet-version: '5.x' 
+      source-url: https://nuget.pkg.github.com/yurii-litvinov/index.json
+    env:
+      NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  - run: dotnet build 
+  - run: dotnet test
+  - run: dotnet pack --configuration Release
+  - run: dotnet nuget push bin/Release/*.nupkg
