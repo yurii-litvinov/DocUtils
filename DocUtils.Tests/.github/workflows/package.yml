@@ -1,0 +1,22 @@
+name: package
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+          source-url: https://nuget.pkg.github.com/yurii-litvinov/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - run: dotnet restore
+      - run: dotnet build --configuration Release --no-restore
+      - run: dotnet test --no-restore --verbosity normal
+      - run: dotnet pack --configuration Release
+      - run: dotnet nuget push bin/Release/*.nupkg
