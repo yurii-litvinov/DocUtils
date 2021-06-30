@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="DocxUtils.fs" />
+    <Compile Include="GoogleSheetsUtils.fs" />
+    <Compile Include="XlsxUtils.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.13.0" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.52.0.2338" />
+  </ItemGroup>
+
+</Project>
