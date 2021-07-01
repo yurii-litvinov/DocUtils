@@ -9,6 +9,7 @@ open System.Threading
 open Google.Apis.Util.Store
 open Google.Apis.Sheets.v4.Data
 
+/// Represents a single sheet (or tab) in a spreadsheet, provides methods to read and modify data.
 type Sheet(service: SheetsService, spreadsheetId: string, sheetId: string) =
     let checkOffset offset =
         if offset <= 0 then 
@@ -28,11 +29,18 @@ type Sheet(service: SheetsService, spreadsheetId: string, sheetId: string) =
         let request = service.Spreadsheets.Values.Get(spreadsheetId, range)
 
         let values = request.Execute().Values 
-        if values <> null then
-            values |> Seq.map (Seq.map string)
-        else
-            Seq.empty
+        let values =
+            if values <> null then
+                values |> Seq.map (Seq.map string)
+            else
+                Seq.empty
 
+        let maxRowLength = values |> Seq.map (fun row -> Seq.length row) |> Seq.max
+
+        values
+        |> Seq.map (fun row -> Seq.append row (Seq.replicate (maxRowLength - Seq.length row) ""))
+
+    /// Writes a column to a sheet.
     member _.WriteColumn(column: string, data: #seq<string>, ?offset: int) =
         let offset = defaultArg offset 1
         checkOffset offset
@@ -44,19 +52,25 @@ type Sheet(service: SheetsService, spreadsheetId: string, sheetId: string) =
 
         request.Execute() |> ignore
 
+    /// Reads given range of a sheet and returns a sequence of rows in that range.
     member _.ReadSheet(startColumn: string, endColumn: string, ?offset: int, ?size: int) =
         read startColumn endColumn offset size
 
+    /// Reads single column of a sheet.
     member _.ReadColumn(column: string, ?offset: int, ?size: int) =
         read column column offset size |> Seq.concat
 
+/// Represents a single Google Sheets document.
 type Spreadsheet(service: SheetsService, spreadsheetId: string) =
+    /// Returns sheet object by Id. Does not query Google Sheets servers, just provides proxy.
     member _.Sheet (sheetId: string) = Sheet(service, spreadsheetId, sheetId)
 
+    /// Returns a list of sheets (or tabs) in a given document. Does query server.
     member _.Sheets () =
         let spreadsheet = service.Spreadsheets.Get(spreadsheetId).Execute ()
         spreadsheet.Sheets |> Seq.map (fun s -> s.Properties.Title)
 
+/// Represents a service for accessing Google Sheets. Typically, one for the entire application.
 type GoogleSheetService(credentialsFileName: string, applicationName: string) =
     let service = 
         use credentialsStream = new FileStream(credentialsFileName, FileMode.Open, FileAccess.Read)
@@ -76,9 +90,11 @@ type GoogleSheetService(credentialsFileName: string, applicationName: string) =
             )
         )
 
+    /// Gets a document by its id (hash). Does not actually query servers, returns proxy.
     member _.Spreadsheet (spreadsheetId: string) =
         Spreadsheet(service, spreadsheetId)
 
+    /// Gets sheet (a tab in a document) by document id (hash) and sheet id (tab name). Does not query servers.
     member _.Sheet (spreadsheetId: string, sheetId: string) = 
         Spreadsheet(service, spreadsheetId).Sheet(sheetId)
 

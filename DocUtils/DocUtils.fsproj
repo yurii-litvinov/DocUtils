@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>SEChairDocUtils</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Yurii Litvinov</Authors>
+    <PackageDescription>Library to help processing of Google Sheets and various Microsoft Office documents. For use in various SE chair document flow automation tasks.</PackageDescription>
+    <RepositoryUrl>https://github.com/yurii-litvinov/DocUtils</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
