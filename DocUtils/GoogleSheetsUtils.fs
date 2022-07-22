@@ -24,7 +24,7 @@ type Sheet(service: SheetsService, spreadsheetId: string, sheetId: string) =
         let offset = defaultArg offset 1
         let size = defaultArg size 1000
         checkBoundaries offset size
-        let range = $"{sheetId}!{startColumn}{offset}:{endColumn}{offset + size}"
+        let range = $"'{sheetId}'!{startColumn}{offset}:{endColumn}{offset + size}"
 
         let request = service.Spreadsheets.Values.Get(spreadsheetId, range)
 
@@ -60,12 +60,42 @@ type Sheet(service: SheetsService, spreadsheetId: string, sheetId: string) =
     member _.ReadColumn(column: string, ?offset: int, ?size: int) =
         read column column offset size |> Seq.concat
 
+    /// Assumes that the offset row is a row with headings and reads only those columns. 
+    /// Returns a list of maps that map header names to row values.
+    member _.ReadByHeaders(columnNames: string list, ?offset: int, ?size: int): seq<Map<string, string>> =
+        let offset = defaultArg offset 1
+        let size = defaultArg size 1000
+        checkBoundaries offset size
+        let columnNames = Set.ofList columnNames
+
+        let range = $"'{sheetId}'!{offset}:{offset + size}"
+
+        let request = service.Spreadsheets.Values.Get(spreadsheetId, range)
+
+        let values = request.Execute().Values
+        if values <> null then
+            let values = values |> Seq.map (Seq.map string)
+            let maxRowLength = values |> Seq.map (fun row -> Seq.length row) |> Seq.max
+            let values = values |> Seq.map (fun row -> Seq.append row (Seq.replicate (maxRowLength - Seq.length row) ""))
+            let headersRow = values |> Seq.head
+            values 
+            |> Seq.skip 1
+            |> Seq.map (
+                fun row -> 
+                    let zippedRow = Seq.zip headersRow row
+                    zippedRow
+                    |> Seq.filter (fun (h, _) -> columnNames.Contains h)
+                    |> Map.ofSeq
+               )
+        else
+            Seq.empty
+
 /// Represents a single Google Sheets document.
 type Spreadsheet(service: SheetsService, spreadsheetId: string) =
     /// Returns sheet object by Id. Does not query Google Sheets servers, just provides proxy.
     member _.Sheet (sheetId: string) = Sheet(service, spreadsheetId, sheetId)
 
-    /// Returns a list of sheets (or tabs) in a given document. Does query server.
+    /// Returns a list of sheet ids (or tabs) in a given document. Does query server. Actual sheets can then be retrieved by id.
     member _.Sheets () =
         let spreadsheet = service.Spreadsheets.Get(spreadsheetId).Execute ()
         spreadsheet.Sheets |> Seq.map (fun s -> s.Properties.Title)
