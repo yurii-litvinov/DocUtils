@@ -15,15 +15,9 @@ type Sheet(service: SheetsService, spreadsheetId: string, sheetId: string) =
         if offset <= 0 then 
             raise <| new ArgumentOutOfRangeException ("Offset shall be greater than zero.")
 
-    let checkBoundaries offset size =
-        checkOffset offset
-        if size < offset then 
-            raise <| new ArgumentOutOfRangeException ("size shall be greater than offset.")
-
     let read startColumn endColumn offset size =
         let offset = defaultArg offset 1
         let size = defaultArg size 1000
-        checkBoundaries offset size
         let range = $"'{sheetId}'!{startColumn}{offset}:{endColumn}{offset + size}"
 
         let request = service.Spreadsheets.Values.Get(spreadsheetId, range)
@@ -65,7 +59,6 @@ type Sheet(service: SheetsService, spreadsheetId: string, sheetId: string) =
     member _.ReadByHeaders(columnNames: string list, ?offset: int, ?size: int): seq<Map<string, string>> =
         let offset = defaultArg offset 1
         let size = defaultArg size 1000
-        checkBoundaries offset size
         let columnNames = Set.ofList columnNames
 
         let range = $"'{sheetId}'!{offset}:{offset + size}"
