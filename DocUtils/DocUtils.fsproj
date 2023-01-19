@@ -20,6 +20,7 @@
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.52.0.2338" />
   </ItemGroup>
 
+  <!-- Dies horribly in CI. Commented out for now.
   <Target Name="FSharpLint" AfterTargets="BeforeBuild">
     <Exec
       Command="dotnet fsharplint -f msbuild lint $(MSBuildProjectFullPath)"
@@ -27,4 +28,6 @@
       IgnoreExitCode="true"
     />
   </Target>
+  -->
+
 </Project>
