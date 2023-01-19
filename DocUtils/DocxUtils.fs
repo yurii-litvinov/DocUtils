@@ -57,7 +57,7 @@ let createParagraph text (justification: Justification) (bold: bool) (italic: bo
 
 let createNumbering (document: WordprocessingDocument) =
     let numberingDefinitionsPart = document.MainDocumentPart.NumberingDefinitionsPart
-    if numberingDefinitionsPart = null then
+    if isNull numberingDefinitionsPart then
         document.MainDocumentPart.AddNewPart<NumberingDefinitionsPart>() |> ignore
         document.MainDocumentPart.NumberingDefinitionsPart.Numbering <- Numbering()
     let numberingPart = document.MainDocumentPart.NumberingDefinitionsPart.Numbering

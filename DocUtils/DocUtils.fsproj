@@ -20,4 +20,11 @@
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.52.0.2338" />
   </ItemGroup>
 
+  <Target Name="FSharpLint" AfterTargets="BeforeBuild">
+    <Exec
+      Command="dotnet fsharplint -f msbuild lint $(MSBuildProjectFullPath)"
+      ConsoleToMsBuild="true"
+      IgnoreExitCode="true"
+    />
+  </Target>
 </Project>

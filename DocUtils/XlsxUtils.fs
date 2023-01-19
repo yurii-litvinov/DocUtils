@@ -18,10 +18,10 @@ let openXlsxSheet (fileName: string) sheetName =
 let private cellValue (workbookPart: WorkbookPart) (cell: Spreadsheet.Cell) =
     let sstPart = workbookPart.GetPartsOfType<SharedStringTablePart>() |> Seq.head
     let sst = sstPart.SharedStringTable
-    if cell.DataType <> null && cell.DataType = EnumValue(Spreadsheet.CellValues.SharedString) then
+    if not (isNull cell.DataType) && cell.DataType = EnumValue(Spreadsheet.CellValues.SharedString) then
         let ssid = cell.CellValue.Text |> int
         sst.ChildElements.[ssid].InnerText
-    elif cell.CellValue = null then
+    elif isNull cell.CellValue then
         ""
     else
         cell.CellValue.Text

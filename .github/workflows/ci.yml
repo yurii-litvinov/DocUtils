@@ -10,5 +10,6 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '7.x' 
+      - run: dotnet tool install -g dotnet-fsharplint
       - run: dotnet build 
       - run: dotnet test
