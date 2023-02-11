@@ -42,11 +42,11 @@ type YandexSpreadsheet internal (service: YandexService, path: string, data: Str
         new YandexSpreadsheet(service, path, new MemoryStream(data))
 
     /// Saves and uploads the spreadsheet to Yandex.Cloud using its original path.
-    member this.Save() =
+    member this.SaveAsync() =
         task {
             use stream = new MemoryStream()
             do! (this :> Spreadsheet).SaveTo(stream)
-            do! service.Upload(stream, path)
+            do! service.UploadAsync(stream, path)
         }
 
 /// Service for Yandex Disk, typically one for the entire application.
@@ -56,7 +56,7 @@ and YandexService(clientId: string, clientSecret: string) =
     let mutable authToken = ""
 
     /// Authenticates a service with Yandex.OAuth and fills authToken.
-    member private _.Authenticate() =
+    member private _.AuthenticateAsync() =
         let getAuthCode () =
             task {
                 let codeUrl =
@@ -142,10 +142,10 @@ and YandexService(clientId: string, clientSecret: string) =
         YandexService(secrets.clientId, secrets.clientSecret)
 
     /// Downloads and returns a spreadsheet by a given absolute path on Yandex.Disk.
-    member this.Spreadsheet(path: string) =
+    member this.GetSpreadsheetAsync(path: string) =
         task {
             if authToken = "" then
-                do! this.Authenticate()
+                do! this.AuthenticateAsync()
 
             let encodedPath = Uri.EscapeDataString(path)
 
@@ -165,10 +165,10 @@ and YandexService(clientId: string, clientSecret: string) =
         }
 
     /// Uploads sheet back to Yandex.Disk using given path. Supposed to be used from YandexSpreadsheet.Save.
-    member internal this.Upload(stream: Stream, path: string) =
+    member internal this.UploadAsync(stream: Stream, path: string) =
         task {
             if authToken = "" then
-                do! this.Authenticate()
+                do! this.AuthenticateAsync()
 
             let path = Uri.EscapeDataString(path)
 

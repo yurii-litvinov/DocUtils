@@ -6,7 +6,7 @@ let (!) task =
 let yandexService = YandexService.FromClientSecretsFile()
 
 let spreadsheet =
-    !(yandexService.Spreadsheet "Курсы/ТРПО/ТРПО, программа курса-копия.xlsx")
+    !(yandexService.GetSpreadsheetAsync "Курсы/ТРПО/ТРПО, программа курса-копия.xlsx")
 
 let sheet = spreadsheet.Sheet "Лист1"
 sheet.Column 0 |> Seq.iter (printfn "%A")
@@ -16,4 +16,4 @@ sheet.WriteColumn 1 1 data
 
 !(spreadsheet.SaveTo "test.xlsx")
 
-!(spreadsheet.Save())
+!(spreadsheet.SaveAsync())

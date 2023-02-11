@@ -9,7 +9,7 @@ open System.IO
 let YandexSheetsShallSuccessfullyAuthenticate () =
     task {
         let service = YandexService.FromClientSecretsFile()
-        let! service = service.Spreadsheet "Описание.xlsx"
+        let! service = service.GetSpreadsheetAsync "Описание.xlsx"
         ()
     }
     |> Async.AwaitTask
