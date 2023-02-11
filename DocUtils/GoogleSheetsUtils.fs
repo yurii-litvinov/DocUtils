@@ -1,4 +1,4 @@
-﻿namespace DocUtils
+﻿namespace DocUtils.GoogleSheets
 
 open System
 open Google.Apis.Sheets.v4
@@ -203,7 +203,6 @@ type Sheet internal (service: SheetsService, spreadsheetId: string, sheetId: str
 
             return! request.ExecuteAsync()
         }
-
 
 /// Represents a single Google Sheets document.
 type Spreadsheet internal (service: SheetsService, spreadsheetId: string) =

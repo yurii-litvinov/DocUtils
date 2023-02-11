@@ -1,4 +1,4 @@
-﻿module LessPainfulDocx
+﻿module DocUtils.Docx
 
 open DocumentFormat.OpenXml.Wordprocessing
 open DocumentFormat.OpenXml
@@ -14,31 +14,35 @@ let createParagraph text (justification: Justification) (bold: bool) (italic: bo
     let run = Run()
 
     let runProperties = RunProperties()
-    let fonts = 
-        RunFonts
-            (Ascii = StringValue("Times New Roman"), 
-             HighAnsi = StringValue("Times New Roman"), 
-             ComplexScript = StringValue("Times New Roman"))
+
+    let fonts =
+        RunFonts(
+            Ascii = StringValue("Times New Roman"),
+            HighAnsi = StringValue("Times New Roman"),
+            ComplexScript = StringValue("Times New Roman")
+        )
 
     let size = FontSize(Val = StringValue("28"))
     let sizeCs = FontSizeComplexScript(Val = StringValue("28"))
-    
+
     runProperties.AppendChild fonts |> ignore
     runProperties.AppendChild size |> ignore
     runProperties.AppendChild sizeCs |> ignore
 
-    if bold then 
+    if bold then
         runProperties.AppendChild(Bold()) |> ignore
-    if italic then 
+
+    if italic then
         runProperties.AppendChild(Italic()) |> ignore
 
     run.AppendChild(runProperties) |> ignore
     run.AppendChild(text) |> ignore
 
     let paragraphProperties = ParagraphProperties()
-    let justificationValue = 
+
+    let justificationValue =
         match justification with
-        | Center -> JustificationValues.Center 
+        | Center -> JustificationValues.Center
         | Stretch -> JustificationValues.Both
         | Left -> JustificationValues.Left
 
@@ -46,6 +50,7 @@ let createParagraph text (justification: Justification) (bold: bool) (italic: bo
         // Do not indent paragraphs with centering.
         let indent = Indentation(FirstLine = StringValue("720"))
         paragraphProperties.Indentation <- indent
+
     let justification = Justification(Val = EnumValue<_>(justificationValue))
     paragraphProperties.Justification <- justification
     paragraphProperties.SpacingBetweenLines <- SpacingBetweenLines(After = StringValue("0"))
@@ -57,17 +62,20 @@ let createParagraph text (justification: Justification) (bold: bool) (italic: bo
 
 let createNumbering (document: WordprocessingDocument) =
     let numberingDefinitionsPart = document.MainDocumentPart.NumberingDefinitionsPart
+
     if isNull numberingDefinitionsPart then
         document.MainDocumentPart.AddNewPart<NumberingDefinitionsPart>() |> ignore
         document.MainDocumentPart.NumberingDefinitionsPart.Numbering <- Numbering()
+
     let numberingPart = document.MainDocumentPart.NumberingDefinitionsPart.Numbering
-    let lastAbstractNumberingId = 
+
+    let lastAbstractNumberingId =
         if numberingPart.Descendants<AbstractNum>() |> Seq.isEmpty then
             0
         else
-            numberingPart.Descendants<AbstractNum>() 
-            |> Seq.map (fun an -> an.AbstractNumberId.Value) 
-            |> Seq.sortDescending 
+            numberingPart.Descendants<AbstractNum>()
+            |> Seq.map (fun an -> an.AbstractNumberId.Value)
+            |> Seq.sortDescending
             |> Seq.head
 
     let abstractNum = AbstractNum()
@@ -77,22 +85,29 @@ let createNumbering (document: WordprocessingDocument) =
     lvl0.StartNumberingValue <- StartNumberingValue(Val = Int32Value 1)
     lvl0.NumberingFormat <- NumberingFormat(Val = EnumValue<NumberFormatValues>(NumberFormatValues.Decimal))
     lvl0.LevelText <- LevelText(Val = StringValue "%1.")
-    lvl0.LevelJustification <- LevelJustification(Val = EnumValue<LevelJustificationValues>(LevelJustificationValues.Left))
+
+    lvl0.LevelJustification <-
+        LevelJustification(Val = EnumValue<LevelJustificationValues>(LevelJustificationValues.Left))
 
     let lvl0PPr = ParagraphProperties()
-    lvl0PPr.Indentation <- Indentation(Left = StringValue("360"), FirstLine = StringValue("0"), Hanging = StringValue("360"))
+
+    lvl0PPr.Indentation <-
+        Indentation(Left = StringValue("360"), FirstLine = StringValue("0"), Hanging = StringValue("360"))
+
     lvl0.AppendChild lvl0PPr |> ignore
 
     let lvl0RunPr = RunProperties()
-    let fonts = 
-        RunFonts
-            (Ascii = StringValue("Times New Roman"), 
-             HighAnsi = StringValue("Times New Roman"), 
-             ComplexScript = StringValue("Times New Roman"))
+
+    let fonts =
+        RunFonts(
+            Ascii = StringValue("Times New Roman"),
+            HighAnsi = StringValue("Times New Roman"),
+            ComplexScript = StringValue("Times New Roman")
+        )
 
     let size = FontSize(Val = StringValue("28"))
     let sizeCs = FontSizeComplexScript(Val = StringValue("28"))
-    
+
     lvl0RunPr.AppendChild fonts |> ignore
     lvl0RunPr.AppendChild size |> ignore
     lvl0RunPr.AppendChild sizeCs |> ignore
@@ -103,21 +118,26 @@ let createNumbering (document: WordprocessingDocument) =
     if numberingPart.Descendants<AbstractNum>() |> Seq.isEmpty then
         numberingPart.AppendChild abstractNum |> ignore
     else
-        numberingPart.Descendants<AbstractNum>() |> Seq.last |> (fun n -> n.InsertAfterSelf abstractNum |> ignore)
+        numberingPart.Descendants<AbstractNum>()
+        |> Seq.last
+        |> (fun n -> n.InsertAfterSelf abstractNum |> ignore)
 
     let num = NumberingInstance()
-    let lastNumberingId = 
+
+    let lastNumberingId =
         if numberingPart.Descendants<NumberingInstance>() |> Seq.isEmpty then
             0
         else
-            numberingPart.Descendants<NumberingInstance>() 
-            |> Seq.map (fun n -> n.NumberID.Value) 
+            numberingPart.Descendants<NumberingInstance>()
+            |> Seq.map (fun n -> n.NumberID.Value)
             |> Seq.sortDescending
             |> Seq.head
 
     num.NumberID <- Int32Value(lastNumberingId + 1)
 
-    let abstractNumberingRef = AbstractNumId(Val = Int32Value(lastAbstractNumberingId + 1))
+    let abstractNumberingRef =
+        AbstractNumId(Val = Int32Value(lastAbstractNumberingId + 1))
+
     num.AppendChild abstractNumberingRef |> ignore
 
     numberingPart.AppendChild num |> ignore
@@ -129,11 +149,13 @@ let createHyperlink link (document: WordprocessingDocument) =
     let run = Run()
 
     let runProperties = RunProperties()
-    let fonts = 
-        RunFonts
-            (Ascii = StringValue("Times New Roman"), 
-             HighAnsi = StringValue("Times New Roman"), 
-             ComplexScript = StringValue("Times New Roman"))
+
+    let fonts =
+        RunFonts(
+            Ascii = StringValue("Times New Roman"),
+            HighAnsi = StringValue("Times New Roman"),
+            ComplexScript = StringValue("Times New Roman")
+        )
 
     let size = FontSize(Val = StringValue("24"))
     let sizeCs = FontSizeComplexScript(Val = StringValue("24"))
@@ -143,8 +165,8 @@ let createHyperlink link (document: WordprocessingDocument) =
     runProperties.AppendChild fonts |> ignore
     runProperties.AppendChild size |> ignore
     runProperties.AppendChild sizeCs |> ignore
-    runProperties.AppendChild underline|> ignore
-    runProperties.AppendChild color|> ignore
+    runProperties.AppendChild underline |> ignore
+    runProperties.AppendChild color |> ignore
 
     run.AppendChild(runProperties) |> ignore
     run.AppendChild(text) |> ignore
@@ -165,7 +187,7 @@ let createHyperlink link (document: WordprocessingDocument) =
     let hyperlink = Hyperlink()
     hyperlink.AppendChild run |> ignore
     hyperlink.Id <- StringValue(rel.Id)
-    hyperlink.History <- OnOffValue.FromBoolean(true)            
+    hyperlink.History <- OnOffValue.FromBoolean(true)
 
     linkParagraph.AppendChild hyperlink |> ignore
     linkParagraph
@@ -175,15 +197,15 @@ let findParagraph (body: Body) (text: string) =
     paragraphs |> Seq.tryFind (fun p -> p.InnerText.Contains(text))
 
 let findPreviousParagraph (body: Body) (paragraph: Paragraph) =
-    body.Descendants<Paragraph>() 
-    |> Seq.pairwise 
-    |> Seq.find (fun (_, next) -> next = paragraph) 
+    body.Descendants<Paragraph>()
+    |> Seq.pairwise
+    |> Seq.find (fun (_, next) -> next = paragraph)
     |> fst
 
 let findNextParagraph (body: Body) (paragraph: Paragraph) =
-    body.Descendants<Paragraph>() 
-    |> Seq.pairwise 
-    |> Seq.find (fun (prev, _) -> prev = paragraph) 
+    body.Descendants<Paragraph>()
+    |> Seq.pairwise
+    |> Seq.find (fun (prev, _) -> prev = paragraph)
     |> snd
 
 let rec removeNextParagraphIfEmpty (body: Body) (paragraph: Paragraph) (recursive: bool) =
@@ -191,6 +213,7 @@ let rec removeNextParagraphIfEmpty (body: Body) (paragraph: Paragraph) (recursiv
 
     if nextParagraph.InnerText = "" then
         nextParagraph.Remove()
+
         if recursive then
             removeNextParagraphIfEmpty body paragraph recursive
 
@@ -199,6 +222,7 @@ let rec removePreviousParagraphIfEmpty (body: Body) (paragraph: Paragraph) (recu
 
     if previousParagraph.InnerText = "" then
         previousParagraph.Remove()
+
         if recursive then
             removePreviousParagraphIfEmpty body paragraph recursive
 

@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>SEChairDocUtils</PackageId>
@@ -8,18 +7,17 @@
     <PackageDescription>Library to help processing of Google Sheets and various Microsoft Office documents. For use in various SE chair document flow automation tasks.</PackageDescription>
     <RepositoryUrl>https://github.com/yurii-litvinov/DocUtils</RepositoryUrl>
   </PropertyGroup>
-
   <ItemGroup>
+    <Compile Include="XlsxUtils.fs" />
+    <Compile Include="YandexSheetsUtils.fs" />
     <Compile Include="DocxUtils.fs" />
     <Compile Include="GoogleSheetsUtils.fs" />
-    <Compile Include="XlsxUtils.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.13.0" />
+    <PackageReference Include="FSharp.Json" Version="0.4.1" />
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.52.0.2338" />
   </ItemGroup>
-
   <!-- Dies horribly in CI. Commented out for now.
   <Target Name="FSharpLint" AfterTargets="BeforeBuild">
     <Exec
@@ -29,5 +27,4 @@
     />
   </Target>
   -->
-
 </Project>

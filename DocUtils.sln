@@ -7,6 +7,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DocUtils", "DocUtils\DocUti
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocUtils.Tests", "DocUtils.Tests\DocUtils.Tests.fsproj", "{C49D0E88-DC5F-420C-B9B9-76255BCDE2E2}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DocUtils.Runner", "DocUtils.Runner\DocUtils.Runner.fsproj", "{2C4FA89B-ED62-4F28-8554-A001CF8B743A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C49D0E88-DC5F-420C-B9B9-76255BCDE2E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C49D0E88-DC5F-420C-B9B9-76255BCDE2E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C49D0E88-DC5F-420C-B9B9-76255BCDE2E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C4FA89B-ED62-4F28-8554-A001CF8B743A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C4FA89B-ED62-4F28-8554-A001CF8B743A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C4FA89B-ED62-4F28-8554-A001CF8B743A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C4FA89B-ED62-4F28-8554-A001CF8B743A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
