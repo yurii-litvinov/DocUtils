@@ -52,6 +52,34 @@ type Sheet internal (workbookPart: WorkbookPart, sheet: SheetData) =
     /// Returns contents of a column with given number as a string sequence.
     member _.Column(columnNumber: int) = readColumn columnNumber
 
+    /// Assumes that the the first row is a row with headings and reads only those columns.
+    /// Returns a list of maps that map header names to row values.
+    member _.ReadByHeaders(columnNames: string list) : seq<Map<string, string>> =
+        let valuesByColumn =
+            columnNames
+            |> List.map readColumnByName
+            |> List.map Seq.toList
+
+        let maxColumnLength = valuesByColumn |> List.map List.length |> List.max
+        let valuesByColumn = 
+            valuesByColumn 
+            |> List.map (fun column -> 
+                   if List.length column < maxColumnLength then 
+                       column @ (List.replicate (maxColumnLength - List.length column) "") 
+                   else 
+                       column
+               )
+
+        let valuesByRow =
+            valuesByColumn
+            |> List.fold (fun (acc: list<list<string>>) column -> 
+                   List.zip column acc |> List.map (fun (item, list) -> item :: list)) (List.replicate maxColumnLength []
+               )
+            |> List.map List.rev
+
+        let valuesWithColumnNames = valuesByRow |> List.map (List.zip columnNames) |> List.map Map.ofList
+        valuesWithColumnNames
+
     /// Writes values to a given column starting from given offset as string values.
     member _.WriteColumn (columnNumber: int) (offset: int) (data: string seq) =
         let mutable rowNumber = 0

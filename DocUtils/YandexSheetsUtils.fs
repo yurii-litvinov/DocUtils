@@ -113,8 +113,8 @@ and YandexService(clientId: string, clientSecret: string) =
             }
 
         task {
-            if File.Exists("token.json") then
-                let contents = File.ReadAllText("token.json")
+            if File.Exists("yandexToken.json") then
+                let contents = File.ReadAllText("yandexToken.json")
                 let token = Json.deserialize<SerializedAuthToken> (contents)
 
                 if token.expiresAt > DateTime.Now then
@@ -129,7 +129,7 @@ and YandexService(clientId: string, clientSecret: string) =
                       expiresAt = DateTime.Now + TimeSpan(0, 0, token.expires_in - 10)
                       refreshToken = token.refresh_token }
 
-                File.WriteAllText("token.json", Json.serialize serializedToken)
+                File.WriteAllText("yandexToken.json", Json.serialize serializedToken)
 
                 authToken <- token.access_token
         }
@@ -179,7 +179,7 @@ and YandexService(clientId: string, clientSecret: string) =
             httpClient.DefaultRequestHeaders.Authorization <- new AuthenticationHeaderValue("OAuth", authToken)
             let! response = httpClient.GetAsync requestUri
             let! responseContent = response.Content.ReadAsStringAsync()
-            let linkObject = Json.deserialize<HttpLink> (responseContent)
+            let linkObject = Json.deserialize<HttpLink>(responseContent)
             let uploadLink = linkObject.href
 
             use message = new HttpRequestMessage(HttpMethod.Put, uploadLink)
