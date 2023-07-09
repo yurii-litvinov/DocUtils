@@ -179,7 +179,7 @@ and YandexService(clientId: string, clientSecret: string) =
             httpClient.DefaultRequestHeaders.Authorization <- new AuthenticationHeaderValue("OAuth", authToken)
             let! response = httpClient.GetAsync requestUri
             let! responseContent = response.Content.ReadAsStringAsync()
-            let linkObject = Json.deserialize<HttpLink>(responseContent)
+            let linkObject = Json.deserialize<HttpLink> (responseContent)
             let uploadLink = linkObject.href
 
             use message = new HttpRequestMessage(HttpMethod.Put, uploadLink)
