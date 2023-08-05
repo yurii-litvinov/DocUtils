@@ -167,12 +167,12 @@ and YandexService(clientId: string, clientSecret: string) =
     /// Downloads and returns a spreadsheet by a given folder URL and file name without extension.
     member this.GetSpreadsheetByFolderAndFileNameAsync(folderUrl: string, fileName: string) =
         let spreadsheetPath =
-            yandexSheetFolderUrl.Remove(0, "https://disk.yandex.ru/client/disk/".Length)
+            folderUrl.Remove(0, "https://disk.yandex.ru/client/disk/".Length)
 
         let unencodedSpreadsheetPath = Uri.UnescapeDataString(spreadsheetPath)
 
         let unencodedFullSpreadsheetPath =
-            unencodedSpreadsheetPath + "/" + yandexSheetFileName + ".xlsx"
+            unencodedSpreadsheetPath + "/" + fileName + ".xlsx"
 
         this.GetSpreadsheetAsync unencodedFullSpreadsheetPath
 
