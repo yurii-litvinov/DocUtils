@@ -164,6 +164,18 @@ and YandexService(clientId: string, clientSecret: string) =
             return YandexSpreadsheet.FromByteArray(this, path, responseContent)
         }
 
+    /// Downloads and returns a spreadsheet by a given folder URL and file name without extension.
+    member this.GetSpreadsheetByFolderAndFileNameAsync(folderUrl: string, fileName: string) =
+        let spreadsheetPath =
+            yandexSheetFolderUrl.Remove(0, "https://disk.yandex.ru/client/disk/".Length)
+
+        let unencodedSpreadsheetPath = Uri.UnescapeDataString(spreadsheetPath)
+
+        let unencodedFullSpreadsheetPath =
+            unencodedSpreadsheetPath + "/" + yandexSheetFileName + ".xlsx"
+
+        this.GetSpreadsheetAsync unencodedFullSpreadsheetPath
+
     /// Uploads sheet back to Yandex.Disk using given path. Supposed to be used from YandexSpreadsheet.Save.
     member internal this.UploadAsync(stream: Stream, path: string) =
         task {
