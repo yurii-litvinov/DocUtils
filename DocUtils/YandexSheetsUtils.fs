@@ -33,6 +33,9 @@ type HttpLink =
       method: string
       templated: bool }
 
+/// Exception thrown when something is wrong with server communication.
+exception ServerCommunicationException of string
+
 /// Specialized .xlsx spreadsheet that allows convenient work with Yandex service.
 type YandexSpreadsheet internal (service: YandexService, path: string, data: Stream) =
     inherit Spreadsheet(data)
@@ -191,16 +194,20 @@ and YandexService(clientId: string, clientSecret: string) =
             httpClient.DefaultRequestHeaders.Authorization <- new AuthenticationHeaderValue("OAuth", authToken)
             let! response = httpClient.GetAsync requestUri
             let! responseContent = response.Content.ReadAsStringAsync()
-            let linkObject = Json.deserialize<HttpLink> (responseContent)
-            let uploadLink = linkObject.href
 
-            use message = new HttpRequestMessage(HttpMethod.Put, uploadLink)
-            stream.Seek(0, SeekOrigin.Begin) |> ignore
-            use fileStreamContent = new StreamContent(stream)
-            fileStreamContent.Headers.ContentType <- MediaTypeHeaderValue("application/octet-stream")
-            fileStreamContent.Headers.ContentLength <- stream.Length
-            message.Content <- fileStreamContent
+            try
+                let linkObject = Json.deserialize<HttpLink> (responseContent)
+                let uploadLink = linkObject.href
 
-            let! response = httpClient.SendAsync(message)
-            response.EnsureSuccessStatusCode() |> ignore
+                use message = new HttpRequestMessage(HttpMethod.Put, uploadLink)
+                stream.Seek(0, SeekOrigin.Begin) |> ignore
+                use fileStreamContent = new StreamContent(stream)
+                fileStreamContent.Headers.ContentType <- MediaTypeHeaderValue("application/octet-stream")
+                fileStreamContent.Headers.ContentLength <- stream.Length
+                message.Content <- fileStreamContent
+
+                let! response = httpClient.SendAsync(message)
+                response.EnsureSuccessStatusCode() |> ignore
+            with :? JsonDeserializationError ->
+                raise (ServerCommunicationException(responseContent))
         }
