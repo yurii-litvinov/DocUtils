@@ -134,7 +134,7 @@ type Spreadsheet internal (dataStream: Stream) =
     member _.SaveTo(stream: Stream) =
         task {
             let clone = document.Clone(stream)
-            clone.Close()
+            clone.Dispose()
         }
 
     /// Saves entire spreadsheet to a given file.
