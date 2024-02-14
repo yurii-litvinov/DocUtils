@@ -82,15 +82,19 @@ type Sheet internal (workbookPart: WorkbookPart, sheet: SheetData) =
 
     /// Writes values to a given column starting from given offset as string values.
     member _.WriteColumn (columnNumber: int) (offset: int) (data: string seq) =
+        let offset = offset - 1 
         let mutable rowNumber = 0
         let dataWithOffset = Seq.append (Seq.replicate offset "") data
         let dataAndRow = Seq.zip dataWithOffset (sheet.Elements<Row>())
 
         for data, row in dataAndRow do
             if rowNumber >= offset then
-                let cell = row.Elements<Cell>() |> Seq.skip columnNumber |> Seq.head
-                cell.CellValue <- new CellValue(data)
-                cell.DataType <- new EnumValue<_>(CellValues.String)
+                try
+                    let cell = row.Elements<Cell>() |> Seq.skip columnNumber |> Seq.head
+                    cell.CellValue <- new CellValue(data)
+                    cell.DataType <- new EnumValue<_>(CellValues.String)
+                with
+                    | _ -> printfn "Failed to write row %d with data %s" rowNumber data
 
             rowNumber <- rowNumber + 1
 

@@ -69,7 +69,13 @@ and YandexService(clientId: string, clientSecret: string) =
                 listener.Prefixes.Add "http://localhost:8888/"
                 listener.Start()
 
-                System.Diagnostics.Process.Start("cmd.exe", $"/C start {codeUrl}") |> ignore
+                if Runtime.InteropServices.RuntimeInformation.IsOSPlatform(Runtime.InteropServices.OSPlatform.Windows) then
+                    System.Diagnostics.Process.Start("cmd.exe", $"/C start {codeUrl}") |> ignore
+                elif Runtime.InteropServices.RuntimeInformation.IsOSPlatform(Runtime.InteropServices.OSPlatform.Linux) then
+                    let codeUrl = codeUrl.Replace("^", "")
+                    System.Diagnostics.Process.Start("yandex-browser-stable", $"{codeUrl}") |> ignore
+                else
+                    failwith "Unsupported OS"
 
                 let! context = listener.GetContextAsync()
                 let request = context.Request
