@@ -113,6 +113,9 @@ type Sheet internal (workbookPart: WorkbookPart, sheet: SheetData) =
     /// Writes values to a given column starting from given offset as string values.
     member _.WriteColumn (columnIndex: string) (offset: int) (data: string seq) =
         let mutable rowNumber = 0
+
+        // rowNumber starts with 0, but actual row numbers in .xlsx --- from 1.
+        let offset = offset - 1
         let dataWithOffset = Seq.append (Seq.replicate offset "") data
         let dataAndRow = Seq.zip dataWithOffset (sheet.Elements<Row>())
 
@@ -216,7 +219,11 @@ type Spreadsheet internal (dataStream: Stream) =
     member _.Sheets() : Sheet seq = sheets.Values
 
     /// Returns a sheet (tab in a spreadsheet) by name.
-    member _.Sheet(sheetName: string) : Sheet = sheets[sheetName]
+    member _.Sheet(sheetName: string) : Sheet = 
+        if sheets.ContainsKey sheetName then
+            sheets[sheetName]
+        else
+            failwithf "Spreadsheet does not contain sheet %s" sheetName
 
     /// Saves entire spreadsheet to a given stream.
     member _.SaveTo(stream: Stream) =
