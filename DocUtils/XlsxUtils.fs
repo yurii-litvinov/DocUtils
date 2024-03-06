@@ -34,7 +34,12 @@ type Sheet internal (workbookPart: WorkbookPart, sheet: SheetData) =
         let sharedStringTableSeq = workbookPart.GetPartsOfType<SharedStringTablePart>()
 
         if Seq.isEmpty sharedStringTableSeq then
-            if isNull cell.CellValue then "" else cell.CellValue.Text
+            if isNull cell.CellValue then 
+                if cell.DataType = EnumValue CellValues.InlineString then
+                    cell.InnerText
+                else
+                    ""
+            else cell.CellValue.Text
         else
             let sharedStringTablePart =
                 workbookPart.GetPartsOfType<SharedStringTablePart>() |> Seq.head
@@ -66,15 +71,24 @@ type Sheet internal (workbookPart: WorkbookPart, sheet: SheetData) =
     let readColumnByName columnName =
         let header = sheet.Elements<Row>() |> Seq.head
         let mutable column = 0
+        let mutable existingColumns = []
 
-        seq {
-            for cell in header.Elements<Cell>() do
-                if cellValue cell = columnName then
-                    yield! readColumn alphabet[column]
+        let result = 
+            seq {
+                for cell in header.Elements<Cell>() do
+                    let currentColumnName = cellValue cell
+                    existingColumns <- currentColumnName :: existingColumns
+                    if currentColumnName = columnName then
+                        yield! readColumn alphabet[column]
 
-                column <- column + 1
-        }
-        |> Seq.skip 1
+                    column <- column + 1
+            }
+            |> Seq.toList
+
+        if List.isEmpty result then
+            failwithf "Column '%s' not found. Available columns: %A" columnName existingColumns
+            
+        result |> List.skip 1
 
     /// Returns contents of a column with given header (first row value) as a string sequence.
     member _.ColumnByName(columnName: string) = readColumnByName columnName
