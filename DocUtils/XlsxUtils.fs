@@ -138,10 +138,10 @@ type Spreadsheet internal (dataStream: Stream) =
         }
 
     /// Saves entire spreadsheet to a given file.
-    member this.SaveTo(path: string) =
+    member _.SaveToFile(fileName: string) =
         task {
-            use stream = new FileStream(path, FileMode.Create)
-            do! this.SaveTo stream
+            let clone = document.Clone(fileName)
+            clone.Dispose()
         }
 
     interface IDisposable with

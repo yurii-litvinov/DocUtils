@@ -45,6 +45,12 @@ type YandexSpreadsheet internal (service: YandexService, path: string, data: Str
         new YandexSpreadsheet(service, path, new MemoryStream(data))
 
     /// Saves and uploads the spreadsheet to Yandex.Cloud using its original path.
+    member this.SaveToFileAsync(fileName: string) =
+        task {
+            do! (this :> Spreadsheet).SaveToFile(fileName)
+        }
+
+    /// Saves and uploads the spreadsheet to Yandex.Cloud using its original path.
     member this.SaveAsync() =
         task {
             use stream = new MemoryStream()
