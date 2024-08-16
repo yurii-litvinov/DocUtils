@@ -239,6 +239,10 @@ type Spreadsheet internal (dataStream: Stream) =
         else
             failwithf "Spreadsheet does not contain sheet %s" sheetName
 
+    /// Returns the first sheet (tab) in a spreadsheet.
+    member _.Sheet() : Sheet = 
+        sheets.Values |> Seq.head
+
     /// Saves entire spreadsheet to a given stream.
     member _.SaveTo(stream: Stream) =
         task {
