@@ -1,19 +1,11 @@
-﻿open DocUtils.YandexSheets
+﻿/// Minimal example of library usage. Used to quickly test library functions.
+open DocUtils.Xlsx
 
 let (!) task =
     task |> Async.AwaitTask |> Async.RunSynchronously
 
-let yandexService = YandexService.FromClientSecretsFile()
+let spreadsheet = Spreadsheet.New()
 
-let spreadsheet =
-    !(yandexService.GetSpreadsheetAsync "Курсы/ТРПО/ТРПО, программа курса-копия.xlsx")
-
-let sheet = spreadsheet.Sheet "Лист1"
-sheet.Column 0 |> Seq.iter (printfn "%A")
-
-let data = Seq.init 10 id |> Seq.map string
-sheet.WriteColumn 1 1 data
+(spreadsheet.Sheets() |> Seq.head).WriteRow [ "1"; "2" ]
 
 !(spreadsheet.SaveTo "test.xlsx")
-
-!(spreadsheet.SaveAsync())

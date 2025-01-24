@@ -5,6 +5,7 @@
     <GenerateProgramFile>true</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="XlsxUtilsTest.fs" />
     <Compile Include="YandexSheetsUtilsTest.fs" />
     <Compile Include="GoogleSheetsUtilsTest.fs" />
   </ItemGroup>
