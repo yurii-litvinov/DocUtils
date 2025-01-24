@@ -37,14 +37,19 @@ type Sheet internal (workbookPart: WorkbookPart, sheet: SheetData) =
         let header = sheet.Elements<Row>() |> Seq.head
         let mutable column = 0
 
-        seq {
-            for cell in header.Elements<Cell>() do
-                if cellValue cell = columnName then
-                    yield! readColumn column
+        let result =
+            seq {
+                for cell in header.Elements<Cell>() do
+                    if cellValue cell = columnName then
+                        yield! readColumn column
 
-                column <- column + 1
-        }
-        |> Seq.skip 1
+                    column <- column + 1
+            } 
+            |> Seq.toList
+        if result |> List.isEmpty then 
+            failwithf "No such column: %s" columnName
+        else
+            result |> List.skip 1
 
     /// Returns contents of a column with given header (first row value) as a string sequence.
     member _.Column(columnName: string) = readColumnByName columnName
@@ -128,7 +133,11 @@ type Spreadsheet internal (dataStream: Stream) =
     member _.Sheets() : Sheet seq = sheets.Values
 
     /// Returns a sheet (tab in a spreadsheet) by name.
-    member _.Sheet(sheetName: string) : Sheet = sheets[sheetName]
+    member _.Sheet(sheetName: string) : Sheet = 
+        if Map.containsKey (StringValue sheetName) sheets then
+            sheets[sheetName]
+        else
+            failwithf "Sheet %s not found" sheetName
 
     /// Saves entire spreadsheet to a given stream.
     member _.SaveTo(stream: Stream) =
